@@ -6,6 +6,11 @@ concurrency:
 
 on:
   push:
+    branches-ignore:
+      - main
+      - gh-pages
+    tags-ignore:
+      - '*'
   pull_request:
 
 jobs:
