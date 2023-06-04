@@ -40,9 +40,11 @@ All inputs are **optional**.
 
 ## Examples
 
+### Quick Start
+
 ```yaml
 # .github/workflows/pr-kicad-diff.yaml
-name: KiCad Diff Check
+name: KiCad Pull Request Diff
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -50,13 +52,16 @@ concurrency:
 
 on:
   pull_request:
+    types:
+    - opened
+    - synchronize
     paths:
-    - '*.kicad_pcb'
-    - '*.kicad_sch'
-    - '*.kicad_pro'
+    - kicad/*.kicad_pcb
+    - kicad/*.kicad_sch
+    - kicad/*.kicad_pro
 
 jobs:
-  kiri:
+  kiri-diff:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -64,11 +69,17 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Kiri
       uses: usa-reddragon/kiri-github-action@v1
+      with:
+        project-file: kicad/productname.kicad_pro
 ```
 
 ```yaml
 # .github/workflows/pr-kicad-diff-delete.yaml
 name: KiCad Diff Delete
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 on:
   pull_request:
@@ -76,9 +87,57 @@ on:
     - closed
 
 jobs:
-  kiri:
+  kiri-delete:
     runs-on: ubuntu-latest
     steps:
     - name: Kiri
       uses: usa-reddragon/kiri-github-action@v1
+```
+
+### Requiring Kiri for PR merges
+
+The `on.pull_request.paths` object is the typical method of filtering to only
+run Kiri on PRs with KiCad file changes. Unfortunately, making a GitHub Action
+required for merging means that the workflow must run for all PRs, even
+those without KiCad changes.
+
+```yaml
+# .github/workflows/pr-kicad-diff.yaml
+name: KiCad Pull Request Diff
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types:
+    - opened
+    - synchronize
+    paths:
+    - kicad/*.kicad_pcb
+    - kicad/*.kicad_sch
+    - kicad/*.kicad_pro
+
+jobs:
+  kiri-diff:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+    # If the PR hasn't changed any KiCad files, we don't need to run Kiri.
+    - name: Check for KiCad files
+      id: kicad-files
+      run: |
+        if git diff --name-only ${{ github.event.pull_request.base.sha }} | grep -q '\.kicad\(_pro\|_sch\|_pcb\)\?$'; then
+          echo "changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "changed=false" >> $GITHUB_OUTPUT
+        fi
+    - name: Kiri
+      uses: usa-reddragon/kiri-github-action@v1
+      if: steps.kicad-files.outputs.changed == 'true'
+      with:
+        project-file: kicad/productname.kicad_pro
 ```
