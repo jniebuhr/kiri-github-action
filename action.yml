@@ -168,7 +168,7 @@ runs:
     shell: bash
     run: |
       cd gh-pages
-      git commit -m "Delete pr-previews/${{ github.event.pull_request.number }}"
+      git commit -m "Delete Kiri output for PR #${{ github.event.pull_request.number }}"
       git push origin gh-pages
   - name: Create a comment on the PR
     if: steps.delete.outputs.deleted == 'true' && github.event_name == 'pull_request' && github.event.action == 'closed'
