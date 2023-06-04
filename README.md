@@ -40,6 +40,9 @@ All inputs are **optional**.
 
 ## Examples
 
+Note: Don't use the main branch, use a tag instead. Using the main branch will result in trying to pull a Docker image that
+doesn't exist.
+
 ### Quick Start
 
 ```yaml
