@@ -53,9 +53,20 @@ runs:
       else
         echo "DEFAULT_LAST=\"${{ inputs.last }}\"" >> $GITHUB_ENV
       fi
+  # If the PR hasn't changed any KiCad files, we don't need to run Kiri.
+  - name: Check for KiCad files
+    id: kicad-files
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    shell: bash
+    run: |
+      if git diff --name-only ${{ github.event.pull_request.base.sha }} | grep -q '\.kicad\(_pro\|_sch\|_pcb\)\?$'; then
+        echo "changed=true" >> $GITHUB_OUTPUT
+      else
+        echo "changed=false" >> $GITHUB_OUTPUT
+      fi
   - name: Run Kiri
-    uses: docker://ghcr.io/usa-reddragon/kiri:v1.0.27
-    if: github.event_name != 'pull_request' || github.event.action != 'closed'
+    uses: docker://ghcr.io/usa-reddragon/kiri:v1.0.28
+    if: github.event_name == 'pull_request' && github.event.action != 'closed' && steps.kicad-files.outputs.changed == 'true'
     env:
       KIRI_PROJECT_FILE: ${{ inputs.project-file }}
       KIRI_OUTPUT_DIR: ${{ inputs.output-dir }}
@@ -75,13 +86,13 @@ runs:
       args: ${{ inputs.extra-args }}
   - name: Upload Kiri custom output
     uses: actions/upload-artifact@v2
-    if: inputs.output-dir != '' && github.event_name == 'pull_request' && github.event.action != 'closed'
+    if: inputs.output-dir != '' && github.event_name == 'pull_request' && github.event.action != 'closed' && steps.kicad-files.outputs.changed == 'true'
     with:
       name: kiri-output
       path: ${{ inputs.output-dir }}
   - name: Get Kiri output directory
     id: kiri-output
-    if : inputs.output-dir == '' && github.event_name == 'pull_request' && github.event.action != 'closed'
+    if : inputs.output-dir == '' && github.event_name == 'pull_request' && github.event.action != 'closed' && steps.kicad-files.outputs.changed == 'true'
     shell: bash
     run: |
       # If output-dir is not set, the output directory is in the same folder as the project file, in the folder .kiri
@@ -93,7 +104,7 @@ runs:
       fi
   - name: Upload Kiri output
     uses: actions/upload-artifact@v2
-    if: inputs.output-dir == '' && github.event_name == 'pull_request' && github.event.action != 'closed'
+    if: inputs.output-dir == '' && github.event_name == 'pull_request' && github.event.action != 'closed' && steps.kicad-files.outputs.changed == 'true'
     with:
       name: kiri-output
       path: ${{ steps.kiri-output.outputs.output-dir }}
@@ -112,14 +123,14 @@ runs:
       git config --local user.email github-actions@github.com
       git config --local user.name github-actions
   - name: Copy the output to a subdirectory of the gh-pages branch
-    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    if: github.event_name == 'pull_request' && github.event.action != 'closed' && steps.kicad-files.outputs.changed == 'true'
     shell: bash
     run: |
       rm -rf gh-pages/pr-previews/${{ github.event.pull_request.number }}
       mkdir -p gh-pages/pr-previews/${{ github.event.pull_request.number }}
       cp -r ${{ steps.kiri-output.outputs.output-dir }}/* gh-pages/pr-previews/${{ github.event.pull_request.number }}
   - name: Commit and push the changes
-    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    if: github.event_name == 'pull_request' && github.event.action != 'closed' && steps.kicad-files.outputs.changed == 'true'
     shell: bash
     id: commit
     run: |
@@ -131,7 +142,7 @@ runs:
     env:
       REPO: ${{ github.repository }}
   - name: Create a comment with the link to the output
-    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    if: github.event_name == 'pull_request' && github.event.action != 'closed' && steps.kicad-files.outputs.changed == 'true'
     uses: peter-evans/create-or-update-comment@v1
     with:
       issue-number: ${{ github.event.pull_request.number }}
