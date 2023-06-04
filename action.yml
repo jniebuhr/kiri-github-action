@@ -1,5 +1,8 @@
 name: Kiri KiCad Diff Action
 description: An action using Kiri to diff KiCad projects in CI
+branding:
+  icon: 'eye'
+  color: 'gray-dark'
 inputs:
   project-file:
     description: Path to the KiCad project file
