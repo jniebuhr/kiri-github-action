@@ -54,7 +54,7 @@ runs:
         echo "DEFAULT_LAST=\"${{ inputs.last }}\"" >> $GITHUB_ENV
       fi
   - name: Run Kiri
-    uses: docker://ghcr.io/usa-reddragon/kiri:v1.0.26
+    uses: docker://ghcr.io/usa-reddragon/kiri:v1.0.27
     if: github.event_name != 'pull_request' || github.event.action != 'closed'
     env:
       KIRI_PROJECT_FILE: ${{ inputs.project-file }}
