@@ -13,6 +13,21 @@ repository and hosts the Kiri output in subdirectories.
 
 For this to work properly, you'll need to make an empty `gh-pages` branch with the file `.nojekyll` (to avoid `_KIRI_` folders returning a 404).
 
+This can be done quickly like so:
+
+```bash
+git init tempfolder
+cd tempfolder
+touch .nojekyll
+git add .nojekyll
+git commit -m "Initial Commit"
+git branch gh-pages
+git remote add origin <your origin>
+git push origin HEAD:refs/heads/gh-pages
+cd ..
+rm -rf tempfolder
+```
+
 ### Deleting PRs on close
 
 Running this action in the context of `pull_request.closed` will delete any Kiri previews that were made for the PR.
