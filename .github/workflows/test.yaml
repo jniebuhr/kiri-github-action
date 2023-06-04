@@ -1,0 +1,45 @@
+name: Test Action
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    # Docker testing
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    - name: Build version
+      uses: docker/build-push-action@v4
+      with:
+        push: false
+        load: true
+        tags: ghcr.io/usa-reddragon/kiri:${{ github.sha }}
+    - name: Modify action.yml to use local image
+      run: |
+        sed -i "s#ghcr.io/usa-reddragon/kiri:__KIRI_VERSION__#ghcr.io/usa-reddragon/kiri:${{ github.sha }}#g" action.yml
+    # Action testing
+    - name: Clone SnekSafe for testing
+      uses: actions/checkout@v3
+      with:
+        repository: USA-RedDragon/SnekSafe
+        path: SnekSafe
+    - name: Test Local Action
+      uses: ./
+      with:
+        project-file: SnekSafe/kicad/sneksafe.kicad_pro
+        output-dir: SnekSafe/kicad/.kiri
+    - name: Ensure output directory was created
+      run: |
+        ls -l SnekSafe/kicad/.kiri
+    - name: Ensure output files were created
+      run: |
+        ls -l SnekSafe/kicad/.kiri/web/index.html
