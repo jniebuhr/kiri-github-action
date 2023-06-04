@@ -17,7 +17,7 @@ fi
 
 . /home/github/.profile
 
-KIRI_ARGS="--no-server --no-error-on-commit-count"
+KIRI_ARGS="--no-server"
 
 # KIRI_OUTPUT_DIR -> --output-dir
 if [ -n "${KIRI_OUTPUT_DIR}" ]; then

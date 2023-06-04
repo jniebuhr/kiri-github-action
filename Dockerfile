@@ -91,9 +91,9 @@ RUN yes | opam init --disable-sandboxing && \
 	rm -rf ~/.opam/repo/*
 
 # Install kiri, kidiff and plotgitsch
-ADD https://api.github.com/repos/USA-RedDragon/kiri/git/refs/heads/main kiri_version.json
+ADD https://api.github.com/repos/leoheck/kiri/git/refs/heads/main kiri_version.json
 ENV KIRI_HOME "/home/github/.local/share/kiri"
-RUN git clone --recurse-submodules -j8 https://github.com/USA-RedDragon/kiri.git "${KIRI_HOME}"
+RUN git clone --recurse-submodules -j8 https://github.com/leoheck/kiri.git "${KIRI_HOME}"
 RUN cd "${KIRI_HOME}/submodules/plotkicadsch" && \
 	opam pin add -y kicadsch . && \
 	opam pin add -y plotkicadsch . && \
