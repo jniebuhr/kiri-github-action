@@ -33,7 +33,6 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         push: true
-        load: true
         tags: ghcr.io/usa-reddragon/kiri-ci:${{ github.sha }}
     - name: Modify action.yml to use local image
       run: |
@@ -55,3 +54,7 @@ jobs:
     - name: Ensure output files were created
       run: |
         ls -l SnekSafe/kicad/.kiri/web/index.html
+    - name: Delete ci image from GHCR
+      if: always()
+      run: |
+        curl -X DELETE -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/USA-RedDragon/kiri-ci/packages/container/kiri-ci/versions/${{ github.sha }}
