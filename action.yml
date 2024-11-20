@@ -49,8 +49,8 @@ runs:
         # Deepen topic branch; checkout topic branch
         git fetch origin ${{ github.event.pull_request.head.ref }} --depth=$(( ${{ github.event.pull_request.commits }} + 1 ))
         git checkout ${{ github.event.pull_request.head.ref }}
-        # Fetch main for common origin
-        git fetch origin main:main
+        # Fetch master for common origin
+        git fetch origin master:master
         COUNT=$(git rev-list --count ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
         echo "DEFAULT_LAST=\"${COUNT}\"" >> $GITHUB_ENV
       else
