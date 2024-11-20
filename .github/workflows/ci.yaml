@@ -17,6 +17,8 @@ concurrency:
 jobs:
   docker:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v3
       - name: Set up Docker Buildx
@@ -89,7 +91,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
         with:
           push: true
-          tags: ghcr.io/usa-reddragon/kiri:${{ steps.major_version.outputs.major_version }}
+          tags: ghcr.io/jniebuhr/kiri:${{ steps.major_version.outputs.major_version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Re-tag minor and major version
