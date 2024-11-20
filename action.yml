@@ -90,7 +90,7 @@ runs:
     with:
       args: ${{ inputs.extra-args }}
   - name: Upload Kiri custom output
-    uses: actions/upload-artifact@v2
+    uses: actions/upload-artifact@v4
     if: inputs.output-dir != '' && github.event_name == 'pull_request' && github.event.action != 'closed' && steps.kicad-files.outputs.changed == 'true'
     with:
       name: kiri-output
@@ -108,14 +108,14 @@ runs:
         echo "output-dir=$(dirname ${{ inputs.project-file }})/.kiri" >> $GITHUB_OUTPUT
       fi
   - name: Upload Kiri output
-    uses: actions/upload-artifact@v2
+    uses: actions/upload-artifact@v4
     if: inputs.output-dir == '' && github.event_name == 'pull_request' && github.event.action != 'closed' && steps.kicad-files.outputs.changed == 'true'
     with:
       name: kiri-output
       path: ${{ steps.kiri-output.outputs.output-dir }}
   - name: Checkout gh-pages branch
     if: github.event_name == 'pull_request'
-    uses: actions/checkout@v3
+    uses: actions/checkout@v4
     with:
       ref: gh-pages
       fetch-depth: 0
