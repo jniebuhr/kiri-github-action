@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
+      contents: write
     steps:
       - uses: actions/checkout@v3
       - name: Set up Docker Buildx
@@ -116,18 +117,3 @@ jobs:
           release_name: Release ${{ steps.full_version.outputs.full_version }}
           draft: false
           prerelease: false
-      - name: Create Issue on Failure
-        if: failure() && startsWith(github.ref, 'refs/tags/v')
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const create = await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: "Failed to deploy release ${{ steps.full_version.outputs.full_version }}",
-              body: "Automation has failed us! Failed to push release ${{ steps.full_version.outputs.full_version }}\nMore information can be found at:\n - ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-              assignees: [
-                "${{ github.actor }}"
-              ]
-            })
